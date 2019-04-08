@@ -28,7 +28,7 @@ public class CuratorWatcherTest {
     private static final String ZK_ADDRESS = "192.168.1.26:2181";
     private static final String ZK_PATH = "/zktest";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         CuratorFramework client = CuratorFrameworkFactory.newClient(
                 ZK_ADDRESS,
@@ -44,8 +44,26 @@ public class CuratorWatcherTest {
                 true
 
         );
-
         watcher.getListenable().addListener(new PathChildrenCacheListener() {
+            @Override
+            public void childEvent(CuratorFramework curatorFramework,
+                                   PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+                ChildData data = pathChildrenCacheEvent.getData();
+                if (data == null){
+                    System.out.println("No data in event[" + pathChildrenCacheEvent + "]");
+                } else {
+                    System.out.println("Receive event: "
+                            + "type=[" + pathChildrenCacheEvent.getType() + "]"
+                            + ", path=[" + data.getPath() + "]"
+                            + ", data=[" + new String(data.getData()) + "]"
+                            + ", stat=[" + data.getStat() + "]");
+                }
+            }
+        });
+
+        watcher.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+        Thread.sleep(Integer.MAX_VALUE);
+        /*watcher.getListenable().addListener(new PathChildrenCacheListener() {
             public void childEvent(CuratorFramework client1, PathChildrenCacheEvent event) throws Exception {
                 ChildData data = event.getData();
                 if (data == null) {
@@ -58,6 +76,6 @@ public class CuratorWatcherTest {
                             + ", stat=[" + data.getStat() + "]");
                 }
             }
-        });
+        });*/
     }
 }
